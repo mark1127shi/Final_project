@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset=""utf-8>
+		<title>Login</title>
+	</head>
+
+	<body>
+		<div class='logincontent' alion='center'>
+			<div class='logintop'>
+				<h1>Login</h1>
+			</div><br><br><br><br>
+			<div class='loginbottom'>
+			<form action="{{url_for('login')}}" method='post' >
+			<div class='msg'>{{ msg }}</div>
+			<input type='text' name='username' placeholder='Enter Your Username' class='textbox' id='password' required><br><br>
+			<input type='password' name='password' placeholder="Enter Your Password" class='textbox' id='password' required><br><br><br>
+			<input type='submit' class='btn' value='Login'>
+		    </form><br><br>
+            <p class="worddark">New to this page? <a class="worddark" href="{{ url_for('register')}}">Register here</a></p>
+            </div>
+		</div> 
+	</body>
+</html>
