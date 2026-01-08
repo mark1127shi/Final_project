@@ -141,3 +141,18 @@
     font-style: oblique;
     font-weight: bold;
 }
+
+#control{
+    position: absolute;
+    top: 8px;
+    left: 24px;
+    color: white;
+    font-size: 18px;
+    }
+
+#girl{
+    z-index: 9999;
+    line-height: 100px;
+    cursor: move; /* Changes the cursor to indicate it's draggable */
+    position: absolute;
+}
