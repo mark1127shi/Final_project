@@ -1,120 +1,149 @@
-const cubism2Model =
+const modelURL =
   "https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/shizuku/shizuku.model.json";
-const cubism4Model =
-  "https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/haru/haru_greeter_t03.model3.json";
 
-const live2d = PIXI.live2d;
+(async () => {
 
-(async function main() {
+  const container = document.getElementById("live2d-container");
+  const canvas = document.getElementById("live2d");
+
+  /* pixi */
   const app = new PIXI.Application({
-    view: document.getElementById("canvas"),
-    autoStart: true,
-    resizeTo: window,
-    backgroundColor: 0x333333
+    view: canvas,
+    resizeTo: container,
+    backgroundAlpha: 0,
+    autoStart: true
   });
 
-  const models = await Promise.all([
-    live2d.Live2DModel.from(cubism2Model),
-    live2d.Live2DModel.from(cubism4Model)
-  ]);
+  /* const model */
+  const model = await PIXI.live2d.Live2DModel.from(modelURL);
 
-  models.forEach((model) => {
-    app.stage.addChild(model);
+  model.scale.set(0.25);
+  model.anchor.set(0.5, 1);
+  model.x = app.screen.width / 2;
+  model.y = app.screen.height - model.height * model.scale.y * 0.6;
 
-    const scaleX = (innerWidth * 0.4) / model.width;
-    const scaleY = (innerHeight * 0.8) / model.height;
 
-    // fit the window
-    model.scale.set(Math.min(scaleX, scaleY));
-
-    model.y = innerHeight * 0.1;
-
-    draggable(model);
-    addFrame(model);
-    addHitAreaFrames(model);
-  });
-
-  const model2 = models[0];
-  const model4 = models[1];
-
-  model2.x = (innerWidth - model2.width - model4.width) / 2;
-  model4.x = model2.x + model2.width;
-
-  // handle tapping
-
-  model2.on("hit", (hitAreas) => {
-    if (hitAreas.includes("body")) {
-      model2.motion("tap_body");
-    }
-
-    if (hitAreas.includes("head")) {
-      model2.expression();
-    }
-  });
-
-  model4.on("hit", (hitAreas) => {
-    if (hitAreas.includes("Body")) {
-      model4.motion("Tap");
-    }
-
-    if (hitAreas.includes("Head")) {
-      model4.expression();
-    }
-  });
-})();
-
-function draggable(model) {
+  model.interactive = true;
   model.buttonMode = true;
-  model.on("pointerdown", (e) => {
-    model.dragging = true;
-    model._pointerX = e.data.global.x - model.x;
-    model._pointerY = e.data.global.y - model.y;
+  model.interactiveChildren = true;
+
+  app.stage.interactive = true;
+  app.stage.hitArea = app.screen;
+
+  app.stage.addChild(model);
+
+  /* const bubble */
+  const bubble = new PIXI.Container();
+  bubble.visible = false;
+
+  const bubbleBg = new PIXI.Graphics()
+    .beginFill(0xffffff, 0.9)
+    .drawRoundedRect(0, 0, 220, 80, 16)
+    .endFill();
+
+  const bubbleText = new PIXI.Text("", {
+    fontSize: 16,
+    fill: 0x333333,
+    wordWrap: true,
+    wordWrapWidth: 190
   });
-  model.on("pointermove", (e) => {
-    if (model.dragging) {
-      model.position.x = e.data.global.x - model._pointerX;
-      model.position.y = e.data.global.y - model._pointerY;
+
+  bubbleText.position.set(15, 15);
+
+  const tail = new PIXI.Graphics()
+    .beginFill(0xffffff, 0.9)
+    .drawPolygon([0,0, 20,20, 40,0])
+    .endFill();
+  tail.position.set(70, 75);
+
+  bubble.addChild(bubbleBg, bubbleText, tail);
+  app.stage.addChild(bubble);
+
+  app.ticker.add(() => {
+    bubble.x = model.x - 110;
+    bubble.y = model.y - model.height * model.scale.y - 40;
+  });
+
+  /* speaking part */
+  const texts = [
+    "Hey! ",
+    "That tickles!",
+    "Please be gentle ",
+    "Hi there!",
+    "Do you need help?",
+    "やめて〜",
+    "くすぐったい！",
+    "やさしくしてね ",
+    "こんにちは！",
+    "何か用？"
+  ];
+
+  const jp_texts = [  //from anime
+    "えっ？！ (Eh?!)",
+    "えーと… (Eeto...)",
+    "やばい！ (Yabai!)",
+    "もう...",
+  ]
+
+  let timer = null;
+
+  model.on("hit", (areas) => {
+    if (areas.includes("head")) {
+      bubbleText.text = texts[Math.floor(Math.random() * texts.length)];
+      bubble.visible = true;
+      clearTimeout(timer);
+      timer = setTimeout(() => bubble.visible = false, 2500);
+      model.expression();
+    }
+
+    if (areas.includes("body")) {
+      bubbleText.text = jp_texts[Math.floor(Math.random() * jp_texts.length)];
+      bubble.visible = true;
+      clearTimeout(timer);
+      timer = setTimeout(() => bubble.visible = false, 2500);
+      model.motion("tap_body");
+    }
+
+    if (areas.includes('mouth')){
+      model.motion("shake");
     }
   });
-  model.on("pointerupoutside", () => (model.dragging = false));
-  model.on("pointerup", () => (model.dragging = false));
-}
 
-function addFrame(model) {
-  const foreground = PIXI.Sprite.from(PIXI.Texture.WHITE);
-  foreground.width = model.internalModel.width;
-  foreground.height = model.internalModel.height;
-  foreground.alpha = 0.2;
-
-  model.addChild(foreground);
-
-  checkbox("Model Frames", (checked) => (foreground.visible = checked));
-}
-
-function addHitAreaFrames(model) {
-  const hitAreaFrames = new live2d.HitAreaFrames();
-
-  model.addChild(hitAreaFrames);
-
-  checkbox("Hit Area Frames", (checked) => (hitAreaFrames.visible = checked));
-}
-
-function checkbox(name, onChange) {
-  const id = name.replace(/\W/g, "").toLowerCase();
-
-  let checkbox = document.getElementById(id);
-
-  if (!checkbox) {
-    const p = document.createElement("p");
-    p.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${name}</label>`;
-
-    document.getElementById("control").appendChild(p);
-    checkbox = p.firstChild;
-  }
-
-  checkbox.addEventListener("change", () => {
-    onChange(checkbox.checked);
+  model.on("pointertap", () => {
+    console.log("MODEL CLICKED ");
   });
 
-  onChange(checkbox.checked);
-}
+  /* drag the container as a whole part only instead of the character */
+  let containerDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  container.addEventListener("pointerdown", (e) => {
+    //Only drag when Shift is held
+    if (!e.shiftKey) return;
+
+    containerDragging = true;
+    offsetX = e.clientX - container.offsetLeft;
+    offsetY = e.clientY - container.offsetTop;
+
+    container.setPointerCapture(e.pointerId);
+  });
+
+  container.addEventListener("pointermove", (e) => {
+    if (!containerDragging) return;
+
+    container.style.left = `${e.clientX - offsetX}px`;
+    container.style.top = `${e.clientY - offsetY}px`;
+    container.style.right = "auto";
+    container.style.bottom = "auto";
+  });
+
+  container.addEventListener("pointerup", () => {
+    containerDragging = false;
+  });
+
+  container.addEventListener("pointercancel", () => {
+    containerDragging = false;
+  });
+
+})();

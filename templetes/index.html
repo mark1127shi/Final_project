@@ -1,29 +1,24 @@
 <!doctype html>
-<html>
+<html lang='ja'>
 <head>
+    <meta charset='UTF-8'>
     <title>Index</title>
     <link rel="stylesheet" href="../static/style.css">
 
-    <!-- Live2D / PIXI -->
+    <!--load it from ripo outside-->
     <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.2/dist/browser/pixi.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display/dist/cubism2.min.js"></script>
-
-    <style>
-        #live2d {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: auto;
-            z-index: 9999;
+    <STYLE>
+        BODY{
+            font-family:'Noto Sans JP','Hiragino Sans'. sans-serif;
         }
-    </style>
+    </STYLE>
 </head>
 
 <body bgcolor="#e6ffee">
 
-    <!-- YOUR ORIGINAL PAGE -->
+    <!-- basic fuction -->
     <div class="one">
         <div class="two">
             <h1>Side Bar</h1>
@@ -45,134 +40,10 @@
         </div>
     </div>
 
-    <!-- LIVE2D CANVAS -->
-    <canvas id="live2d"></canvas>
+<div id="live2d-container">
+  <canvas id="live2d"></canvas>
+</div>
 
-    <script>
-    const modelURL =
-      "https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/shizuku/shizuku.model.json";
-
-    (async () => {
-        //APP
-        const app = new PIXI.Application({
-            view: document.getElementById("live2d"),
-            resizeTo: window,
-            backgroundAlpha: 0,
-            autoStart: true
-        });
-
-        // model
-        const model = await PIXI.live2d.Live2DModel.from(modelURL);
-
-        model.scale.set(0.2);
-        model.x = window.innerWidth * 0.1;
-        model.y = window.innerHeight * 0.9;
-        model.anchor.set(0.5, 1);
-
-        model.interactive = true;
-        model.buttonMode = true;
-
-        app.stage.addChild(model);
-
-        //speech bubble
-        const bubble = new PIXI.Container();
-        bubble.visible = false;
-
-        const bubbleBg = new PIXI.Graphics();
-        bubbleBg.beginFill(0xffffff, 0.9);
-        bubbleBg.drawRoundedRect(0, 0, 220, 80, 16);
-        bubbleBg.endFill();
-
-        const bubbleText = new PIXI.Text("", {
-            fontSize: 16,
-            fill: 0x333333,
-            wordWrap: true,
-            wordWrapWidth: 190
-        });
-        bubbleText.x = 15;
-        bubbleText.y = 15;
-
-        const tail = new PIXI.Graphics();
-        tail.beginFill(0xffffff, 0.9);
-        tail.drawPolygon([0,0, 20,20, 40,0]);
-        tail.endFill();
-        tail.x = 60;
-        tail.y = 70;
-
-        bubble.addChild(bubbleBg, bubbleText, tail);
-        app.stage.addChild(bubble);
-
-        // follow
-        app.ticker.add(() => {
-            bubble.x = model.x - 110;
-            bubble.y = model.y - model.height * model.scale.y - 280;
-        });
-
-        // language
-        const texts = [
-            "Hey! 😊",
-            "That tickles!",
-            "Please be gentle 💕",
-            "Hi there!",
-            "Do you need help?",
-            "やめて〜😊",
-            "くすぐったい！",
-            "やさしくしてね 💕",
-            "こんにちは！",
-            "何か用？"
-        ];
-
-        let bubbleTimer = null;
-
-        // hit
-        model.on("hit", (areas) => {
-
-            if (areas.includes("head")) {
-                const msg = texts[Math.floor(Math.random() * texts.length)];
-                bubbleText.text = msg;
-                bubble.visible = true;
-
-                clearTimeout(bubbleTimer);
-                bubbleTimer = setTimeout(() => {
-                    bubble.visible = false;
-                }, 2500);
-            }
-
-            if (areas.includes("body")) {
-                model.motion("tap_body");
-            }
-
-            if (areas.includes("mouth")) {
-                model.motion('shake');
-            }
-            if (areas.includes("head")) {
-                model.expression();
-            }
-        });
-
-        // drag
-        let dragging = false;
-        let offset = { x: 0, y: 0 };
-
-        model.on("pointerdown", (e) => {
-            dragging = true;
-            const pos = e.data.getLocalPosition(app.stage);
-            offset.x = model.x - pos.x;
-            offset.y = model.y - pos.y;
-        });
-
-        model.on("pointerup", () => dragging = false);
-        model.on("pointerupoutside", () => dragging = false);
-
-        model.on("pointermove", (e) => {
-            if (!dragging) return;
-            const pos = e.data.getLocalPosition(app.stage);
-            model.x = pos.x + offset.x;
-            model.y = pos.y + offset.y;
-        });
-
-    })();
-    </script>
-
+<script src="js_file/girl.js"></script>
 </body>
 </html>
