@@ -57,7 +57,7 @@ def login():
                 session['username'] = user['username']
                 return redirect(url_for('index'))
             else:
-                msg = 'Username or Password is wrong'
+                msg = 'Username or Password is wrong!'
         else:
             msg = 'Please enter username and password！'
     return render_template('login.html', msg=msg)
@@ -79,7 +79,7 @@ def register():
             cursor = conn.cursor()
             cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
             if cursor.fetchone():
-                msg = 'Unvilid username'
+                msg = 'Invalid username'
             else:
                 cursor.execute('''
                 INSERT INTO users (username, password, email, city, state, country, postalcode)
@@ -96,14 +96,23 @@ def register():
                 return redirect(url_for('index'))
             conn.close()
         else:
-            msg = 'Please enter all below！'
+            msg = 'Please fill in all required fields！'
     return render_template('register.html', msg=msg)
 @app.route('/index')
 def index():
     if 'loggedin' in session:
-        return render_template('index.html',
-                               username=session['username'],
-                               msg=f'Welcome back，{session["username"]}！')
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE id = ?', (session['id'],))
+        user = cursor.fetchone()
+        conn.close()
+        if user:
+            return render_template('index.html',
+                                   username=session['username'],
+                                   user_id=user['id'],
+                                   email=user['email'],
+                                   country=user['country'],
+                                   msg=f'Welcome back, {session["username"]}!')
     return redirect(url_for('login'))
 @app.route('/display')
 def display():
@@ -134,7 +143,7 @@ def update():
         cursor.execute('SELECT id FROM users WHERE username = ? AND id != ?',
                        (username, session['id']))
         if cursor.fetchone():
-            msg = 'The username is used by others！'
+            msg = 'Invalid username'
         else:
             cursor.execute('''
             UPDATE users 
@@ -143,7 +152,7 @@ def update():
             WHERE id = ?
             ''', (username, password, email, city, state, country, postalcode, session['id']))
             conn.commit()
-            msg = 'Update success！'
+            msg = 'Information updated successfully!'
             session['username'] = username
     cursor.execute('SELECT * FROM users WHERE id = ?', (session['id'],))
     account = cursor.fetchone()
@@ -157,6 +166,6 @@ def logout():
     return redirect(url_for('login'))
 if __name__ == '__main__':
     init_db()
-    print("用户管理系统启动")
-    print("访问地址: http://127.0.0.1:5000")
+    print("User Management System started")
+    print("Visit address: http://127.0.0.1:5000")
     app.run(debug=True, port=5000)

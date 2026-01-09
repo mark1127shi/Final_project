@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang='ja'>
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
     <meta charset='UTF-8'>
     <title>Index</title>
     <link rel="stylesheet" href="../static/style.css">
@@ -9,14 +12,61 @@
     <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.2/dist/browser/pixi.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display/dist/cubism2.min.js"></script>
-    <STYLE>
-        BODY{
-            font-family:'Noto Sans JP','Hiragino Sans'. sans-serif;
+    <style>
+    *{
+        font-family: "Delius", cursive;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    #Profile ,#draggable {
+      position: absolute;
+      z-index: 9;
+      background-image: url('../static/background.jpg');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: auto;
+      background-attachment: fixed;
+      padding: 40px;
+      border-radius: 30px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.2);
+    }
+
+    #Profileheader ,#draggableheader {
+      padding: 8px;
+      cursor: move;
+      z-index: 10;
+      border-radius: 10px;
+      background-color: #cf9fff;
+      color: black;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+
+    .function {
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 10px;
+      background-color: hsla(120, 100%, 75%, 0.3);  /*HSLA color values are an extension of HSL with an Alpha channel (opacity).*/
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .function a {
+      color: black;
+      text-decoration: none;
+    }
+
+    body{
+            font-family:'Noto Sans JP','Hiragino Sans', sans-serif;
         }
-    </STYLE>
+
+    </style>
+    <script src='../static/drag.js'></script>
 </head>
 
-<body bgcolor="#e6ffee">
+<body bgcolor="#f5f5f5">
 
     <!-- basic fuction -->
     <div class="one">
@@ -38,7 +88,30 @@
                 <div class="msg">{{ msg }}</div>
             </div>
         </div>
-    </div>
+        <div id="info">
+            <main>
+                <div id="Profile" style='top:100px;left:250px'>
+                    <div id="Profileheader">Personal Profile</div>
+                    <h1>{{ username }}</h1>
+                    <h4>{{ email }}</h4>
+                    <h4>{{ country }}</h4>
+                </div>
+                <div id='draggable' style='top:200px;right:10px;'>
+                  <div id="draggableheader">Functions</div><!--change after build-->
+                  <div class="function">
+                    <a href="{{ url_for('todo_list') }}">To-do List</a>
+                  </div>
+
+                  <div class="function">
+                    <a href="{{ url_for('time_management') }}">Time Management</a>
+                  </div>
+
+                  <div class="function">
+                    <a href="{{ url_for('wiki') }}">Wikipedia</a>
+                  </div>
+                </div>
+            </main>
+        </div>
 
 <div id="live2d-container">
   <canvas id="live2d"></canvas>
